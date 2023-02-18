@@ -15,7 +15,7 @@ services:
     depends_on:
       - app
     networks:
-      - blca-network
+      - app-network
   app:
     build:
       context: ./
@@ -29,7 +29,7 @@ services:
     ports:
       - "9000:9000"
     networks:
-      - blca-network
+      - app-network
   mysql:
     image: mysql:5.7.16
     container_name: mysql
@@ -37,17 +37,17 @@ services:
     ports:
       - "3306:3306"
     volumes:
-      - ./mysql_bloomex:/var/lib/mysql
+      - ./mysql:/var/lib/mysql
     environment:
-      MYSQL_DATABASE: bloomex
-      MYSQL_USER: bloomex
+      MYSQL_DATABASE: name
+      MYSQL_USER: name
       MYSQL_ROOT_PASSWORD: secret
       MYSQL_PASSWORD: secret
     networks:
-      - blca-network
+      - app-network
 volumes:
-  mysql_bloomex:
+  mysql:
 networks:
-  blca-network:
-    name: 'blca_netvork'
+  app-network:
+    name: app-network
     driver: bridge
