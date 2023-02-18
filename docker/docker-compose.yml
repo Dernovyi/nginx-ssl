@@ -1,0 +1,53 @@
+version: '3.7'
+
+services:
+  nginx:
+    image: nginx:latest
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./ssl:/etc/nginx/ssl
+      - ../src:/var/www/html
+      - ./nginx.conf:/etc/nginx/nginx.conf
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      - app
+    networks:
+      - blca-network
+  app:
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    restart: always
+    environment:
+      APP_ENV: dev
+    working_dir: /var/www/html
+    volumes:
+      - ../src:/var/www/html
+    ports:
+      - "9000:9000"
+    networks:
+      - blca-network
+  mysql:
+    image: mysql:5.7.16
+    container_name: mysql
+    restart: unless-stopped
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./mysql_bloomex:/var/lib/mysql
+    environment:
+      MYSQL_DATABASE: bloomex
+      MYSQL_USER: bloomex
+      MYSQL_ROOT_PASSWORD: secret
+      MYSQL_PASSWORD: secret
+    networks:
+      - blca-network
+volumes:
+  mysql_bloomex:
+networks:
+  blca-network:
+    name: 'blca_netvork'
+    driver: bridge
