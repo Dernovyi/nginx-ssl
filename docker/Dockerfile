@@ -1,9 +1,7 @@
 FROM php:7.0-fpm
 
-RUN apt-get -qq update && apt-get -qq install libxml++2.6-dev > /dev/null
 # Install dependencies
 RUN apt-get update && apt-get install -y \
-    jpegoptim optipng pngquant gifsicle \
     libjpeg62-turbo-dev \
     libfreetype6-dev \
     build-essential \
@@ -11,6 +9,7 @@ RUN apt-get update && apt-get install -y \
     libxrender1 \
     libpng-dev \
     libzip-dev \
+    libicu-dev \
     libpq-dev \
     openssl \
     locales \
@@ -18,12 +17,21 @@ RUN apt-get update && apt-get install -y \
     curl \
     zip \
     vim \
-    git \
-    && docker-php-ext-configure gd --with-freetype-dir=/usr/include/ --with-jpeg-dir=/usr/include/ \
-    && docker-php-ext-install -j$(nproc) pdo pdo_mysql mysqli zip exif pcntl gd
+    git
 
+# Install system dependencies
 RUN pecl install xdebug-2.5.5 \
     && docker-php-ext-enable xdebug
+
+# Clear cache
+RUN apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# Install PHP extension GD
+RUN docker-php-ext-configure gd --with-freetype=/usr/include/ --with-jpeg=/usr/include/
+RUN docker-php-ext-install gd
+
+# Install PHP extensions
+RUN docker-php-ext-install pdo pdo_mysql mysqli zip exif pcntl intl bcmath
 
 RUN yes | pecl install   \
     && echo "zend_extension=$(find /usr/local/lib/php/extensions/ -name xdebug.so)" > /usr/local/etc/php/conf.d/xdebug.ini \
